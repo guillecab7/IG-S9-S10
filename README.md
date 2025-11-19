@@ -285,5 +285,6 @@ void main() {
 - `gl_FragColor` es el color final que se dibuja en pantalla para ese píxel.
 
 El resultado es tu textura de obsidiana animada con zonas moradas que pulsan, texturas suaves, manchas brillantes aleatorias, y bordes oscurecidos.
-Aquí os dejo una imagen del resultado, pero el trabajo completo se ve descargando uno de los archivos .frag y abriéndolo en el editor [The Book of Shaders](http://editor.thebookofshaders.com/)
+Aquí os dejo una imagen del resultado, pero el trabajo completo se ve descargando uno de los archivos .frag y abriéndolo en el editor [The Book of Shaders](http://editor.thebookofshaders.com/).
+
 ![Obsidiana](https://github.com/guillecab7/IG-S9-S10/blob/main/Imagen_Resultado.png)
