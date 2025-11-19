@@ -9,7 +9,7 @@ La tarea a realizar es la siguiente:
 # Desarrollo del Shader
 El shader que pensé  en realizar es principalmente la textura de un [bloque de obsidiana oscura](https://github.com/guillecab7/IG-S9-S10/blob/main/Obsidiana.webp) del videojuego Minecraft. Dado que en el Minecraft es relativamente difícil obtener este bloque, y siempre me llamó la atención la obsidiana por su color negro oscuro, mezclado con el resaltado morado brillante, decidí crear un shader similando esta textura.
 
-El código desarrollado en [Obsidiana_Oscura.frag](https://github.com/guillecab7/IG-S9-S10/blob/main/Obsidiana_Oscura.frag) y su versión [TinyCode](https://github.com/guillecab7/IG-S9-S10/blob/main/Obsidiana_Oscura_Tiny.frag) en 1 línea.
+El código desarrollado en el editor [The Book of Shaders](http://editor.thebookofshaders.com/) y podéis ver el resultado en [Obsidiana_Oscura.frag](https://github.com/guillecab7/IG-S9-S10/blob/main/Obsidiana_Oscura.frag) y su versión [TinyCode](https://github.com/guillecab7/IG-S9-S10/blob/main/Obsidiana_Oscura_Tiny.frag).
 
 Ahora pasaré a explicar detalladamente como fue la realización de este shader.
 
@@ -210,62 +210,78 @@ void main() {
 
 - `cellCoord.x * 0.8 + cellCoord.y * 0.4` combina la posición en X e Y.
 
-- Usamos la función sin para repartir las combinaciones generadas a lo largo de la imagen.
+- Usamos la función seno para repartir las combinaciones generadas a lo largo de la imagen.
 
 - Usamos este método de truncado para convertir los valores del seno `0.5 + 0.5 * sin(...)` y que pasen de valer [-1,1] a sólo valores positivos [0,1].
 
 - Así obtenemos un patrón suave de bandas (claras/oscuras) en diagonal.
 
-- Dado que con la explicación es difícil de imaginar, la siguiente imagen obtenida en el test ejecutado del editor [The Book of Shaders](http://editor.thebookofshaders.com/)nos muestra el resultado. A veces una imagen vale más que mil palabras.
+- Dado que con la explicación es difícil de imaginar, la siguiente imagen obtenida en el test ejecutado desde el editor [The Book of Shaders](http://editor.thebookofshaders.com/) nos muestra el resultado. A veces una imagen vale más que mil palabras.
 
-
+![Patrón de bandas cuadradas](https://github.com/guillecab7/IG-S9-S10/blob/main/Test_bandas.png)
 
 ```code
-    // Mezclamos el color actual con un morado intenso (highlight) solo en algunas celdas
-    // step(0.9, speckleNoise) devuelve:
-    //   0.0 si speckleNoise < 0.9  → sin highlight
-    //   1.0 si speckleNoise >= 0.9 → celda con highlight
     vec3 highlightColor = vec3(0.45, 0.18, 0.75);
     finalColor = mix(finalColor, highlightColor, step(0.9, speckleNoise));
 ```
+- `highlightColor`: Mezclamos el color actual con un morado más brillante en algunas celdas.
+
+- `step(0.9, speckleNoise)`:
+
+  - Devuelve 0 si `speckleNoise < 0.9`.
+
+  - Devuelve 1 si `speckleNoise >= 0.9`.
+
+- Solo en ~10% de las celdas (cuando el ruido es muy alto) se aplica el highlight. Así conseguimos que el resaltado sea en poquitas celdas elegidas aleatoriamente, y queda una textura más realista.
+
+- `mix(finalColor, highlightColor, 0 o 1)`:
+
+  - Si se mezcla con 0 el color se queda igual.
+
+  - Si se mezcla con 1 la celda se vuelve morado brillante.
+
+- El resultado son manchas puntuales brillantes de color morado.
 
 ```code
-    // Aplicamos variación de brillo basada en el patrón de vetas:
-    // mix(0.75, 1.25, stripePattern * 0.6) da un factor entre ~0.75 y ~1.25
-    // Esto hace que unas zonas se vean más claras y otras más oscuras, simulando vetas
     float stripeBrightnessFactor = mix(0.75, 1.25, stripePattern * 0.6);
     finalColor *= stripeBrightnessFactor;
 ```
+- Usamos `stripePattern` para modular el brillo, que está basado en el patrón de bandas descrito anteriormente:
+
+  - Multiplicamos `stripePattern * 0.6` para regularlo un poco.
+
+  - `mix(0.75, 1.25, stripePattern * 0.6)` da un factor entre ~0.75 y ~1.25.
+
+- Multiplicamos el color por ese factor:
+
+  - Algunas zonas se oscurecen (0.75) y otras se iluminan (1.25).
+
+- El resultado son la aparición de bandas suaves en el material.
 
 ```code
-    // Aplicamos sombreado en los bordes:
-    // edgeDistance pequeño cerca de los bordes, grande en el centro
-    // edgeDistance / 0.15 normaliza un poco ese valor para usarlo en la mezcla
-    // El factor de mezcla va entre 0.4 (más oscuro) y 1.1 (un poco más brillante)
     float edgeBrightnessFactor = mix(0.4, 1.1, edgeDistance / 0.15);
     finalColor *= edgeBrightnessFactor;
 ```
+- Aplicamos sombreado en los bordes.
+
+- `edgeDistance` es pequeño en los bordes de pantalla y grande en el centro.
+
+- `edgeDistance / 0.15` normalizamos aproximadamente a [0,1] para usarlo en la mezcla.
+
+- `mix(0.4, 1.1, ...)`:
+
+  - Cuando estamos cerca del borde el factor de mezcla es ~0.4, que es más oscuro.
+
+  - Cuando estamos más hacia el centro el factor de mezcla es ~1.1, que es un pelín más claro.
+
+- Multiplicas el color y creas una especie de sombra en los bordes.
 
 ```code
-    // Asignamos el color final del fragmento con alfa = 1.0 (totalmente opaco)
     gl_FragColor = vec4(finalColor, 1.0);
 }
 ```
+- Empaquetamos el color final en un vec4 añadiendo una componente alfa = 1.0 (totalmente opaco).
 
-```code
+- `gl_FragColor` es el color final que se dibuja en pantalla para ese píxel.
 
-```
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+El resultado es tu textura de obsidiana animada con zonas moradas que pulsan, texturas suaves, manchas brillantes aleatorias, y bordes oscurecidos.
